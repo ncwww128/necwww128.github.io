@@ -4,7 +4,7 @@ import { COLORS, SIZES } from "./constants.js";
 export class Crossroad {
   constructor(scene) {
     this.scene = scene;
-    this.placementZones = []; // Stores { position: Vector3, type: 'lane'/'corner', direction?: Vector3, mesh: Mesh }
+    this.placementZones = []; // Stores { position: Vector3, type: 'lane_start_zone'/'lane_goal_zone'/'corner', direction?: Vector3, mesh: Mesh }
   }
 
   create() {
@@ -67,8 +67,13 @@ export class Crossroad {
     // Placement Zones (Simplified - entry/exit points and corners)
     const zoneSize = laneWidth * 0.8;
     const zoneGeo = new THREE.BoxGeometry(zoneSize, 0.1, zoneSize);
-    const zoneMatLane = new THREE.MeshBasicMaterial({
-      color: COLORS.ZONE_LANE,
+    const zoneMatLaneStart = new THREE.MeshBasicMaterial({
+      color: COLORS.ZONE_LANE_START,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const zoneMatLaneGoal = new THREE.MeshBasicMaterial({
+      color: COLORS.ZONE_LANE_GOAL,
       transparent: true,
       opacity: 0.3,
     });
@@ -77,67 +82,63 @@ export class Crossroad {
       transparent: true,
       opacity: 0.3,
     });
-
     const halfRoadW = roadWidth / 2;
     const halfLaneW = laneWidth / 2;
     const armEnd = halfRoadW + roadLength;
-
-    // Lane Zones (Entry points) - Simplified
-    const lanePositions = [
-      // Northbound lanes (approaching from South)
-      {
-        pos: new THREE.Vector3(-halfLaneW, 0.05, armEnd),
-        type: "lane_entry",
-        laneType: "right",
-        dir: new THREE.Vector3(0, 0, -1),
-      },
+    // START Lane Zones (Blue): Where cars enter the intersection area (Left-Hand Driving)
+    const startLanePositions = [
+      // Northbound Entry (from South arm, car's left is +X):
       {
         pos: new THREE.Vector3(halfLaneW, 0.05, armEnd),
-        type: "lane_entry",
-        laneType: "left",
+        type: "lane_start_zone",
         dir: new THREE.Vector3(0, 0, -1),
       },
-      // Southbound lanes (approaching from North)
-      {
-        pos: new THREE.Vector3(halfLaneW, 0.05, -armEnd),
-        type: "lane_entry",
-        laneType: "right",
-        dir: new THREE.Vector3(0, 0, 1),
-      },
+      // Southbound Entry (from North arm, car's left is -X):
       {
         pos: new THREE.Vector3(-halfLaneW, 0.05, -armEnd),
-        type: "lane_entry",
-        laneType: "left",
+        type: "lane_start_zone",
         dir: new THREE.Vector3(0, 0, 1),
       },
-      // Eastbound lanes (approaching from West)
-      {
-        pos: new THREE.Vector3(-armEnd, 0.05, -halfLaneW),
-        type: "lane_entry",
-        laneType: "right",
-        dir: new THREE.Vector3(1, 0, 0),
-      },
+      // Eastbound Entry (from West arm, car's left is +Z):
       {
         pos: new THREE.Vector3(-armEnd, 0.05, halfLaneW),
-        type: "lane_entry",
-        laneType: "left",
+        type: "lane_start_zone",
         dir: new THREE.Vector3(1, 0, 0),
       },
-      // Westbound lanes (approaching from East)
-      {
-        pos: new THREE.Vector3(armEnd, 0.05, halfLaneW),
-        type: "lane_entry",
-        laneType: "right",
-        dir: new THREE.Vector3(-1, 0, 0),
-      },
+      // Westbound Entry (from East arm, car's left is -Z):
       {
         pos: new THREE.Vector3(armEnd, 0.05, -halfLaneW),
-        type: "lane_entry",
-        laneType: "left",
+        type: "lane_start_zone",
         dir: new THREE.Vector3(-1, 0, 0),
       },
     ];
-
+    // GOAL Lane Zones (Yellow): Where cars exit the intersection area (Left-Hand Driving)
+    const goalLanePositions = [
+      // Northbound Exit (to North arm, car is now on its RIGHT lane, +X side of N-S road):
+      {
+        pos: new THREE.Vector3(halfLaneW, 0.05, -armEnd),
+        type: "lane_goal_zone",
+        dir: new THREE.Vector3(0, 0, -1),
+      },
+      // Southbound Exit (to South arm, car is now on its RIGHT lane, -X side of N-S road):
+      {
+        pos: new THREE.Vector3(-halfLaneW, 0.05, armEnd),
+        type: "lane_goal_zone",
+        dir: new THREE.Vector3(0, 0, 1),
+      },
+      // Eastbound Exit (to East arm, car is on its left lane, +Z side of E-W road):
+      {
+        pos: new THREE.Vector3(armEnd, 0.05, halfLaneW),
+        type: "lane_goal_zone",
+        dir: new THREE.Vector3(1, 0, 0),
+      },
+      // Westbound Exit (to West arm, car is on its left lane, -Z side of E-W road):
+      {
+        pos: new THREE.Vector3(-armEnd, 0.05, -halfLaneW),
+        type: "lane_goal_zone",
+        dir: new THREE.Vector3(-1, 0, 0),
+      },
+    ];
     // Corner Zones (for signs/lights)
     const cornerOffset = halfRoadW + 1; // Place slightly off the road
     const cornerPositions = [
@@ -167,12 +168,14 @@ export class Crossroad {
       this.scene.add(mesh);
       return mesh;
     };
-
-    lanePositions.forEach((data) => {
-      const mesh = createZoneMesh(data.pos, zoneMatLane);
+    startLanePositions.forEach((data) => {
+      const mesh = createZoneMesh(data.pos, zoneMatLaneStart);
       this.placementZones.push({ ...data, mesh });
     });
-
+    goalLanePositions.forEach((data) => {
+      const mesh = createZoneMesh(data.pos, zoneMatLaneGoal);
+      this.placementZones.push({ ...data, mesh });
+    });
     cornerPositions.forEach((data) => {
       const mesh = createZoneMesh(data.pos, zoneMatCorner);
       this.placementZones.push({ ...data, mesh });
