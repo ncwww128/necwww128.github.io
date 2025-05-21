@@ -141,25 +141,37 @@ export class Crossroad {
     ];
     // Corner Zones (for signs/lights)
     const cornerOffset = halfRoadW + 1; // Place slightly off the road
+    // Define canonical entry directions for clarity
+    const dirNorthboundEntry = new THREE.Vector3(0, 0, -1); // From South, heading North
+    const dirSouthboundEntry = new THREE.Vector3(0, 0, 1); // From North, heading South
+    const dirEastboundEntry = new THREE.Vector3(1, 0, 0); // From West, heading East
+    const dirWestboundEntry = new THREE.Vector3(-1, 0, 0); // From East, heading West
     const cornerPositions = [
+      // SE corner: Controls Northbound traffic (from South) and Westbound traffic (from East)
       {
         pos: new THREE.Vector3(cornerOffset, 0.05, cornerOffset),
         type: "corner",
-      }, // SE
+        affectedLaneDirections: [dirNorthboundEntry, dirWestboundEntry],
+      },
+      // SW corner: Controls Northbound traffic (from South) and Eastbound traffic (from West)
       {
         pos: new THREE.Vector3(-cornerOffset, 0.05, cornerOffset),
         type: "corner",
-      }, // SW
+        affectedLaneDirections: [dirNorthboundEntry, dirEastboundEntry],
+      },
+      // NE corner: Controls Southbound traffic (from North) and Westbound traffic (from East)
       {
         pos: new THREE.Vector3(cornerOffset, 0.05, -cornerOffset),
         type: "corner",
-      }, // NE
+        affectedLaneDirections: [dirSouthboundEntry, dirWestboundEntry],
+      },
+      // NW corner: Controls Southbound traffic (from North) and Eastbound traffic (from West)
       {
         pos: new THREE.Vector3(-cornerOffset, 0.05, -cornerOffset),
         type: "corner",
-      }, // NW
+        affectedLaneDirections: [dirSouthboundEntry, dirEastboundEntry],
+      },
     ];
-
     const createZoneMesh = (pos, material) => {
       const mesh = new THREE.Mesh(zoneGeo, material);
       mesh.position.copy(pos);
