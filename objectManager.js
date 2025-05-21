@@ -45,13 +45,13 @@ export class ObjectManager {
       case "TrafficLight":
         // Position slightly higher
         const lightPos = position.clone().setY(SIZES.TRAFFIC_LIGHT_HEIGHT / 2);
-        instance = new TrafficControl("TrafficLight", lightPos);
+        instance = new TrafficControl("TrafficLight", lightPos, options); // Pass options
         mesh = instance.mesh;
         break;
       case "StopSign":
         // Position slightly higher
         const signPos = position.clone().setY(SIZES.SIGN_HEIGHT / 2);
-        instance = new TrafficControl("StopSign", signPos);
+        instance = new TrafficControl("StopSign", signPos, options); // Pass options
         mesh = instance.mesh;
         break;
       default:

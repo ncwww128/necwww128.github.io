@@ -1,5 +1,6 @@
 import * as THREE from "https://esm.sh/three@0.171.0";
 import { COLORS } from "./constants.js";
+
 export class PlacementController {
   constructor(camera, scene, placementZones, objectManager) {
     this.camera = camera;
@@ -210,7 +211,13 @@ export class PlacementController {
         return;
       }
       const position = this.hoveredZone.pos.clone();
-      this.objectManager.createObject(this.selectedObjectType, position, {});
+      // Pass the entire hoveredZone object, which contains 'affectedLaneDirections' for corner zones
+      const options = { placementZone: this.hoveredZone };
+      this.objectManager.createObject(
+        this.selectedObjectType,
+        position,
+        options
+      );
       // Keep selected type for placing multiple signs/lights easily
     } else {
       // No object type selected, click does nothing relevant here

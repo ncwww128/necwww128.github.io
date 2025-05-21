@@ -2,13 +2,21 @@ import * as THREE from "https://esm.sh/three@0.171.0";
 import { COLORS, SIZES } from "./constants.js";
 
 export class TrafficControl {
-  constructor(type, position) {
+  constructor(type, position, options = {}) {
+    // Added options parameter
     this.type = type; // 'TrafficLight' or 'StopSign'
     this.position = position.clone();
     this.state = "green"; // For TrafficLight: 'red', 'yellow', 'green'
     this.cycleTimer = Math.random() * SIZES.TRAFFIC_LIGHT_CYCLE; // Random initial offset
+
+    // Store the placementZone if provided, crucial for StopSign logic
+    this.placementZone = options.placementZone || null;
+
     this.mesh = this.createMesh();
     this.mesh.position.copy(this.position);
+    // If it's a StopSign and we have placement zone data, orient it based on the zone.
+    // This is a more robust way to orient, but might need adjustment depending on how affectedLaneDirections are defined.
+    // For now, let's keep the original orientation logic in createMesh unless a specific issue arises.
   }
 
   createMesh() {
